@@ -11,6 +11,7 @@ class TestContent(TestCase):
 
     @classmethod
     def setUpTestData(cls):
+        """Создаёт пользователей и заметки для проверок контента."""
         User = get_user_model()
         cls.author = User.objects.create_user(username="author")
         cls.reader = User.objects.create_user(username="reader")

@@ -8,8 +8,11 @@ from notes.models import Note
 
 
 class TestRoutes(TestCase):
+    """Тесты доступности маршрутов приложения заметок."""
+
     @classmethod
     def setUpTestData(cls):
+        """Создаёт автора, читателя и заметку для проверки маршрутов."""
         user_model = get_user_model()
         cls.author = user_model.objects.create_user(username='author')
         cls.reader = user_model.objects.create_user(username='reader')
@@ -21,6 +24,7 @@ class TestRoutes(TestCase):
         )
 
     def test_public_pages_available_for_anonymous(self):
+        """Публичные страницы доступны анонимному пользователю."""
         urls = (
             reverse('notes:home'),
             reverse('users:login'),
@@ -32,6 +36,7 @@ class TestRoutes(TestCase):
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_author_has_access_to_note_pages(self):
+        """Автор имеет доступ ко всем страницам своей заметки."""
         self.client.force_login(self.author)
         urls = (
             reverse('notes:list'),
@@ -47,6 +52,7 @@ class TestRoutes(TestCase):
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_reader_cannot_access_someone_else_note(self):
+        """Читатель не получает доступ к чужой заметке."""
         self.client.force_login(self.reader)
         urls = (
             reverse('notes:detail', kwargs={'slug': self.note.slug}),
@@ -59,6 +65,7 @@ class TestRoutes(TestCase):
                 self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
     def test_anonymous_redirects_to_login(self):
+        """Анонимный пользователь перенаправляется на страницу входа."""
         login_url = reverse('users:login')
         urls = (
             reverse('notes:list'),

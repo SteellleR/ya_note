@@ -10,6 +10,7 @@ from pytils.translit import slugify
 
 
 def test_user_can_create_note(author_client, author, form_data):
+    """Авторизованный пользователь создаёт заметку."""
     response = author_client.post(reverse('notes:add'), data=form_data)
     assertRedirects(response, reverse('notes:success'))
     assert Note.objects.count() == 1
@@ -22,6 +23,7 @@ def test_user_can_create_note(author_client, author, form_data):
 
 @pytest.mark.django_db
 def test_anonymous_user_cant_create_note(client, form_data):
+    """Анонимный пользователь перенаправляется при попытке создания."""
     response = client.post(reverse('notes:add'), data=form_data)
     login_url = reverse('users:login')
     expected_redirect = f'{login_url}?next={reverse("notes:add")}'
@@ -30,6 +32,7 @@ def test_anonymous_user_cant_create_note(client, form_data):
 
 
 def test_not_unique_slug(author_client, note, form_data):
+    """Попытка создать заметку с существующим слагом выдаёт ошибку."""
     form_data['slug'] = note.slug
     response = author_client.post(reverse('notes:add'), data=form_data)
     assertFormError(
@@ -41,6 +44,7 @@ def test_not_unique_slug(author_client, note, form_data):
 
 
 def test_empty_slug(author_client, form_data):
+    """При отсутствии слага он генерируется автоматически."""
     form_data.pop('slug')
     response = author_client.post(reverse('notes:add'), data=form_data)
     assertRedirects(response, reverse('notes:success'))
@@ -50,6 +54,7 @@ def test_empty_slug(author_client, form_data):
 
 
 def test_author_can_edit_note(author_client, form_data, note):
+    """Автор обновляет заметку через форму."""
     response = author_client.post(
         reverse('notes:edit', args=(note.slug,)),
         data=form_data,
@@ -62,6 +67,7 @@ def test_author_can_edit_note(author_client, form_data, note):
 
 
 def test_other_user_cant_edit_note(not_author_client, form_data, note):
+    """Чужой пользователь не может отредактировать заметку."""
     response = not_author_client.post(
         reverse('notes:edit', args=(note.slug,)),
         data=form_data,
@@ -74,6 +80,7 @@ def test_other_user_cant_edit_note(not_author_client, form_data, note):
 
 
 def test_author_can_delete_note(author_client, slug_for_args):
+    """Автор может удалить заметку через форму."""
     response = author_client.post(
         reverse('notes:delete', args=slug_for_args)
     )
@@ -82,6 +89,7 @@ def test_author_can_delete_note(author_client, slug_for_args):
 
 
 def test_other_user_cant_delete_note(not_author_client, slug_for_args):
+    """Чужой пользователь не может удалить заметку."""
     response = not_author_client.post(
         reverse('notes:delete', args=slug_for_args)
     )
